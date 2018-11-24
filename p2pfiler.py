@@ -172,15 +172,16 @@ class FilerPeer(P2Peer):
        for fname in self.files.keys():
            if key in fname:
                fpeerid = self.files[fname]
-       if not fpeerid:   # local files mapped to None
-            fpeerid = self.myid
-            host,port = peerid.split(':')
-    		# can't use sendtopeer here because peerid is not necessarily
-    		# an immediate neighbor
-            self.connectandsend(host, int(port), QRESPONSE,
-    				     '%s %s' % (fname, fpeerid),
-    				     pid=peerid)
-            return
+           try :
+               fpeerid
+           except NameError:
+               fpeerid = self.myid
+               host,port = peerid.split(':')
+    		   # can't use sendtopeer here because peerid is not necessarily
+    		   # an immediate neighbor
+               self.connectandsend(host, int(port), QRESPONSE,
+    				               '%s %s' % (fname, fpeerid), pid=peerid)
+               return
     	# will only reach here if key not found... in which case
     	# propagate query to neighbors
        if ttl > 0:

@@ -8,6 +8,7 @@ Module implementing simple BerryTella GUI for a simple p2p network.
 
 
 import sys
+import os
 import threading
 
 from tkinter import *
@@ -28,8 +29,11 @@ class P2PGui(Frame):
       self.plist = []
       with open(firstpeer, 'r') as fl:
           for line in fl:
-
-      host,port = firstpeer.split(':')
+             print(line)
+             h,p = line.split(':')
+             self.plist.append([h,p])
+      print(self.plist)
+      host,port = self.plist[0]
       self.p2peer.buildpeers( host, int(port), hops=hops )
       self.updatePeerList()
 
@@ -82,8 +86,8 @@ class P2PGui(Frame):
 
       fileFrame.grid(row=0, column=0, sticky=N+S)
       peerFrame.grid(row=0, column=1, sticky=N+S)
+      addfileFrame.grid(row=2)
       pbFrame.grid(row=2, column=1)
-      addfileFrame.grid(row=3)
       searchFrame.grid(row=4)
       rebuildFrame.grid(row=3, column=1)
 
@@ -93,7 +97,7 @@ class P2PGui(Frame):
       fileListFrame = Frame(fileFrame)
       fileListFrame.grid(row=1, column=0)
       fileScroll = Scrollbar( fileListFrame, orient=VERTICAL )
-      fileScroll.grid(row=0, column=1, sticky=N+S)
+      fileScroll.grid(row=0, column=2, sticky=N+S)
 
       self.fileList = Listbox(fileListFrame, height=5,
                         yscrollcommand=fileScroll.set)
@@ -101,15 +105,15 @@ class P2PGui(Frame):
       self.fileList.grid(row=0, column=0, sticky=N+S)
       fileScroll["command"] = self.fileList.yview
 
-      self.fetchButton = Button( fileFrame, text='Fetch',
-                           command=self.onFetch)
-      self.fetchButton.grid()
-
-      self.addfileEntry = Entry(addfileFrame, width=25)
-      self.addfileButton = Button(addfileFrame, text='Add',
-                           command=self.onAdd)
-      self.addfileEntry.grid(row=0, column=0)
+      self.fetchButton = Button(addfileFrame, text='Fetch',
+                                 command=self.onFetch)
+      self.addfileButton = Button(addfileFrame, text='Populate',
+                                  command=self.onPopulate)
+      self.fetchButton.grid(row=0, column=0)
       self.addfileButton.grid(row=0, column=1)
+      #self.addfileEntry = Entry(addfileFrame, width=25)
+
+      #self.addfileEntry.grid(row=0, column=0)
 
       self.searchEntry = Entry(searchFrame, width=25)
       self.searchButton = Button(searchFrame, text='Search',
@@ -143,14 +147,16 @@ class P2PGui(Frame):
 
 
       # print "Done"
+   def onPopulate(self):
+      for file in os.listdir():
+        self.onAdd(file)
 
-
-   def onAdd(self):
-      file = self.addfileEntry.get()
+   def onAdd(self, file):
+      #file = self.addfileEntry.get()
       if file.lstrip().rstrip():
          filename = file.lstrip().rstrip()
          self.p2peer.addlocalfile( filename )
-      self.addfileEntry.delete( 0, len(file) )
+      #self.addfileEntry.delete( 0, len(file) )
       self.updateFileList()
 
 
@@ -189,9 +195,9 @@ class P2PGui(Frame):
       self.updatePeerList()
       self.updateFileList()
 
-   def onRebuild(self):
+   #def onRebuild(self):
 
-   def onRebuild_(self):
+   def onRebuild(self):
       if not self.p2peer.maxpeersreached():
          peerid = self.rebuildEntry.get()
          self.rebuildEntry.delete( 0, len(peerid) )
