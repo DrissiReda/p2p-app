@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-# p2gui.py by Nadeem Abdul Hamid
+# p2gui.py
 
 """
-Module implementing simple BerryTella GUI for a simple p2p network.
+Module implementing simple GUI for a simple p2p network.
 """
 
 

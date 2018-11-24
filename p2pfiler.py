@@ -20,8 +20,7 @@ ERROR = "ERRO"
 #==============================================================================
 class FilerPeer(P2Peer):
 #==============================================================================
-    """ Implements a file-sharing peer-to-peer entity based on the generic
-    BerryTella P2P framework.
+    """ Implements a file-sharing peer-to-peer entity.
 
     """
 
