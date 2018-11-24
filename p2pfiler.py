@@ -28,7 +28,7 @@ class FilerPeer(P2Peer):
         # --------------------------------------------------------------------------
         """ Initializes the peer to support connections up to maxpeers number
         of peers, with its server listening on the specified port. Also sets
-        the dictionary of local files to empty and adds handlers to the 
+        the dictionary of local files to empty and adds handlers to the
         P2Peer framework.
 
         """
@@ -73,13 +73,11 @@ class FilerPeer(P2Peer):
 
     def __handle_insertpeer(self, peerconn, data):
         # --------------------------------------------------------------------------
-        """ Handles the INSERTPEER (join) message type. The message data
-        should be a string of the form, "peerid  host  port", where peer-id
-        is the canonical name of the peer that desires to be added to this
-        peer's list of peers, host and port are the necessary data to connect
-        to the peer.
-
-        """
+        # Handles the INSERTPEER (join) message type. The message data
+        # should be a string of the form, "peerid  host  port", where peer-id
+        # is the canonical name of the peer that desires to be added to this
+        # peer's list of peers, host and port are the necessary data to connect
+        # to the peer.
         self.peerlock.acquire()
         try:
             try:
@@ -137,7 +135,7 @@ class FilerPeer(P2Peer):
         """ Handles the QUERY message type. The message data should be in the
         format of a string, "return-peer-id  key  ttl", where return-peer-id
         is the name of the peer that initiated the query, key is the (portion
-        of the) file name being searched for, and ttl is how many further 
+        of the) file name being searched for, and ttl is how many further
         levels of peers this query should be propagated on.
 
         """
@@ -159,7 +157,7 @@ class FilerPeer(P2Peer):
 
     def __processquery(self, peerid, key, ttl):
         # --------------------------------------------------------------------------
-        """ Handles the processing of a query message after it has been 
+        """ Handles the processing of a query message after it has been
         received and acknowledged, by either replying with a QRESPONSE message
         if the file is found in the local list of files, or propagating the
         message onto all immediate neighbors.
@@ -266,7 +264,7 @@ class FilerPeer(P2Peer):
 
     def buildpeers(self, host, port, hops=1):
         # --------------------------------------------------------------------------
-        """ buildpeers(host, port, hops) 
+        """ buildpeers(host, port, hops)
 
         Attempt to build the local peer list up to the limit stored by
         self.maxpeers, using a simple depth-first search given an
@@ -317,3 +315,8 @@ class FilerPeer(P2Peer):
         """ Registers a locally-stored file with the peer. """
         self.files[filename] = None
         self.__debug("Added local file %s" % filename)
+
+    def dellocalfile(self, filename):
+        """ Deletes a locally-stored file with the peer. """
+        del self.files[filename]
+        self.__debug("Deleted local file %s" % filename)

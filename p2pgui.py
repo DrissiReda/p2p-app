@@ -21,7 +21,7 @@ class P2PGui(Frame):
         Frame.__init__(self, master)
         self.grid()
         self.createWidgets()
-        self.master.title("BerryTella Filer GUI %d" % serverport)
+        self.master.title("G4 P2P GUI port:%d" % serverport)
         self.p2peer = FilerPeer(maxpeers, serverport)
 
         self.bind("<Destroy>", self.__onDestroy)
@@ -97,9 +97,12 @@ class P2PGui(Frame):
                                   command=self.onFetch)
         self.addfileButton = Button(addfileFrame, text='Populate',
                                     command=self.onPopulate)
+        self.delfileButton = Button(addfileFrame, text='Delete',
+                                    command=self.onDelete)
 
         self.fetchButton.grid(row=0, column=0)
         self.addfileButton.grid(row=0, column=1)
+        self.delfileButton.grid(row=0, column=2)
 
         self.searchEntry = Entry(searchFrame, width=25)
         self.searchButton = Button(searchFrame, text='Search',
@@ -164,6 +167,15 @@ class P2PGui(Frame):
                     fd.write(resp[0][1])
                     fd.close()
                     self.p2peer.files[fname] = None  # because it's local now
+    def onDelete(self):
+        sels = self.fileList.curselection()
+        if len(sels) == 1:
+            sel = self.fileList.get(sels[0]).split(':')
+            if len(sel) > 2: # fname:host:port means remote
+                print("Dude, leave people's files alone")
+            else:
+                print("!!!!!!!!!!DELETING "+sel[0]+"'")
+                self.p2peer.dellocalfile(sel[0])
 
     def onRemove(self):
         sels = self.peerList.curselection()
