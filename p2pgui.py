@@ -70,6 +70,7 @@ class P2PGui(Frame):
         rebuildFrame = Frame(self)
         searchFrame = Frame(self)
         addfileFrame = Frame(self)
+        getinfoFrame = Frame(self)
         pbFrame = Frame(self)
 
         fileFrame.grid(row=0, column=0, sticky=N+S)
@@ -99,10 +100,12 @@ class P2PGui(Frame):
                                     command=self.onPopulate)
         self.delfileButton = Button(addfileFrame, text='Delete',
                                     command=self.onDelete)
-
+        self.infofileButton = Button(addfileFrame, text='Info',
+                                    command=self.onInfo)
         self.fetchButton.grid(row=0, column=0)
         self.addfileButton.grid(row=0, column=1)
         self.delfileButton.grid(row=0, column=2)
+        self.infofileButton.grid(row=0, column=3)
 
         self.searchEntry = Entry(searchFrame, width=25)
         self.searchButton = Button(searchFrame, text='Search',
@@ -167,6 +170,7 @@ class P2PGui(Frame):
                     fd.write(resp[0][1])
                     fd.close()
                     self.p2peer.files[fname] = None  # because it's local now
+
     def onDelete(self):
         sels = self.fileList.curselection()
         if len(sels) == 1:
@@ -176,6 +180,17 @@ class P2PGui(Frame):
             else:
                 print("!!!!!!!!!!DELETING "+sel[0]+"'")
                 self.p2peer.dellocalfile(sel[0])
+
+    def onInfo(self):
+        sels = self.fileList.curselection()
+        if len(sels) == 1:
+            sel = self.fileList.get(sels[0]).split(':')
+            if len(sel) <= 2:
+                text="File :"+sel[0]+" is \nsize :"+humansize(os.path.getsize(sel[0]))
+                toplevel = Toplevel()
+                label1 = Label(toplevel, text=text, height=5, width=25)
+                label1.pack()
+                toplevel.focus_force()
 
     def onRemove(self):
         sels = self.peerList.curselection()
@@ -203,7 +218,14 @@ class P2PGui(Frame):
 #         for peerid in self.p2peer.getpeerids():
 #            host,port = self.p2peer.getpeer( peerid )
 
-
+suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+def humansize(nbytes):
+    i = 0
+    while nbytes >= 1024 and i < len(suffixes)-1:
+        nbytes /= 1024.
+        i += 1
+    f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
+    return '%s %s' % (f, suffixes[i])
 def main():
     if len(sys.argv) < 4:
         print ("Syntax: %s server-port max-peers peer-ip:port" % sys.argv[0])
