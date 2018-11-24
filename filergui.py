@@ -21,10 +21,13 @@ class P2PGui(Frame):
       Frame.__init__( self, master )
       self.grid()
       self.createWidgets()
-      self.master.title( "P2P G1 P2P %d" % serverport )
+      self.master.title( "P2P G1 P %d" % serverport )
       self.p2peer = FilerPeer( maxpeers, serverport )
 
       self.bind( "<Destroy>", self.__onDestroy )
+      self.plist = []
+      with open(firstpeer, 'r') as fl:
+          for line in fl:
 
       host,port = firstpeer.split(':')
       self.p2peer.buildpeers( host, int(port), hops=hops )
@@ -186,8 +189,9 @@ class P2PGui(Frame):
       self.updatePeerList()
       self.updateFileList()
 
-
    def onRebuild(self):
+
+   def onRebuild_(self):
       if not self.p2peer.maxpeersreached():
          peerid = self.rebuildEntry.get()
          self.rebuildEntry.delete( 0, len(peerid) )

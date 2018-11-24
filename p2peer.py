@@ -315,9 +315,9 @@ class P2Peer:
                 self.shutdown = True
                 continue
             except:
-                if self.debug:
+                if not self.debug:
                     traceback.print_exc()
-                    continue
+                continue
 
 	    # end while loop
         self.__debug( 'Main loop exiting' )
@@ -342,13 +342,14 @@ class P2PeerConnection:
             self.s.connect( ( host, int(port) ) )
         else:
             self.s = sock
-        self.sd = self.s.makefile( 'rw', 0 )
+        self.sd = self.s.makefile('rw', 1)
 
     #--------------------------------------------------------------------------
     def __makemsg( self, msgtype, msgdata ):
     #--------------------------------------------------------------------------
         msglen = len(msgdata)
-        msg = struct.pack( "!4sL%ds" % msglen, msgtype, msglen, msgdata )
+        formated = "!4sL%ds" % msglen
+        msg = struct.pack(formated.encode('ascii'), msgtype.encode('ascii'), msglen, msgdata.encode('ascii'))
         return msg
 
     #--------------------------------------------------------------------------
@@ -365,7 +366,7 @@ class P2PeerConnection:
         or False if there was an error."""
         try:
             msg = self.__makemsg( msgtype, msgdata )
-            self.sd.write( msg )
+            self.sd.write( msg.decode('ascii') )
             self.sd.flush()
         except KeyboardInterrupt:
             raise
@@ -386,7 +387,7 @@ class P2PeerConnection:
             if not msgtype:
                 return (None, None)
             lenstr = self.sd.read( 4 )
-            msglen = int(struct.unpack( "!L", lenstr )[0])
+            msglen = int(struct.unpack( "!L".encode('ascii'), lenstr.encode('ascii') )[0])
             msg = ""
             while len(msg) != msglen:
                 data = self.sd.read( min(2048, msglen - len(msg)) )
@@ -395,35 +396,29 @@ class P2PeerConnection:
                 msg += data
             if len(msg) != msglen:
                 return (None, None)
-
-	except KeyboardInterrupt:
-	    raise
-	except:
-	    if self.debug:
-		traceback.print_exc()
-	    return (None, None)
-
-	return ( msgtype, msg )
-
+        except KeyboardInterrupt:
+            raise
+        except:
+            if self.debug:
+                traceback.print_exc()
+            return (None, None)
+        return ( msgtype, msg )
     # end recvdata method
-
 
     #--------------------------------------------------------------------------
     def close( self ):
     #--------------------------------------------------------------------------
-	"""
-	close()
+        """
+        close()
 
-	Close the peer connection. The send and recv methods will not work
-	after this call.
-	"""
+        Close the peer connection. The send and recv methods will not work
+        after this call."""
 
-	self.s.close()
-	self.s = None
-	self.sd = None
-
+        self.s.close()
+        self.s = None
+        self.sd = None
 
     #--------------------------------------------------------------------------
     def __str__( self ):
     #--------------------------------------------------------------------------
-	return "|%s|" % peerid
+        return "|%s|" % peerid
