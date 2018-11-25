@@ -78,7 +78,7 @@ class P2PGui(Frame):
         peerFrame.grid(row=0, column=1, sticky=N+S)
         pbFrame.grid(row=2, column=1)
         addfileFrame.grid(row=2)
-        searchFrame.grid(row=4)
+        searchFrame.grid(row=3)
         rebuildFrame.grid(row=3, column=1)
 
         Label(fileFrame, text='Available Files').grid()
@@ -87,12 +87,12 @@ class P2PGui(Frame):
         fileListFrame = Frame(fileFrame)
         fileListFrame.grid(row=1, column=0)
         fileScroll = Scrollbar(fileListFrame, orient=VERTICAL)
-        fileScroll.grid(row=0, column=1, sticky=N+S)
+        fileScroll.grid(row=0, column=4, sticky=N+S+E+W)
 
-        self.fileList = Listbox(fileListFrame, height=5,
+        self.fileList = Listbox(fileListFrame, height=20, width=100,
                                 yscrollcommand=fileScroll.set)
         # self.fileList.insert( END, 'a', 'b', 'c', 'd', 'e', 'f', 'g' )
-        self.fileList.grid(row=0, column=0, sticky=N+S)
+        self.fileList.grid(row=0, column=0, columnspan= 4, sticky=N+S+E+W)
         fileScroll["command"] = self.fileList.yview
 
         self.fetchButton = Button(addfileFrame, text='Fetch',
@@ -108,7 +108,7 @@ class P2PGui(Frame):
         self.delfileButton.grid(row=0, column=2)
         self.infofileButton.grid(row=0, column=3)
 
-        self.searchEntry = Entry(searchFrame, width=25)
+        self.searchEntry = Entry(searchFrame, width=150)
         self.searchButton = Button(searchFrame, text='Search',
                                    command=self.onSearch)
         self.searchEntry.grid(row=0, column=0)
@@ -119,7 +119,7 @@ class P2PGui(Frame):
         peerScroll = Scrollbar(peerListFrame, orient=VERTICAL)
         peerScroll.grid(row=0, column=1, sticky=N+S)
 
-        self.peerList = Listbox(peerListFrame, height=5,
+        self.peerList = Listbox(peerListFrame, height=20, width=30,
                                 yscrollcommand=peerScroll.set)
         # self.peerList.insert( END, '1', '2', '3', '4', '5', '6' )
         self.peerList.grid(row=0, column=0, sticky=N+S)
@@ -130,7 +130,7 @@ class P2PGui(Frame):
         self.refreshButton = Button(pbFrame, text='Refresh',
                                     command=self.onRefresh)
 
-        self.rebuildEntry = Entry(rebuildFrame, width=25)
+        self.rebuildEntry = Entry(rebuildFrame, width=150)
         self.rebuildButton = Button(rebuildFrame, text='Rebuild',
                                     command=self.onRebuild)
         self.removeButton.grid(row=0, column=0)
@@ -191,6 +191,7 @@ class P2PGui(Frame):
             if len(sel) <= 3:
                 text="File :"+sel[0]+" is \nsize :"+self.p2peer.files[sel[0]][0]
                 toplevel = Toplevel()
+                toplevel.title(sel[0]+" Properties")
                 label1 = Label(toplevel, text=text, height=5, width=25)
                 label1.pack()
                 toplevel.focus_force()
