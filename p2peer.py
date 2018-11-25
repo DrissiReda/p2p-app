@@ -93,7 +93,12 @@ class P2Peer:
         peerconn = P2PeerConnection(None, host, port, clientsock, debug=True)
 
         try:
+            print("<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>")
+            print(clientsock.getpeername())
+            print(">>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<")
             msgtype, msgdata = peerconn.recvdata()
+            print(msgtype,msgdata)
+            print("<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>")
             if msgtype:
                 msgtype = msgtype.upper()
             if msgtype not in self.handlers:
@@ -130,8 +135,8 @@ class P2Peer:
 
     def startstabilizer(self, stabilizer, delay):
         # --------------------------------------------------------------------------
-        """ Registers and starts a stabilizer function with this peer. 
-        The function will be activated every <delay> seconds. 
+        """ Registers and starts a stabilizer function with this peer.
+        The function will be activated every <delay> seconds.
 
         """
         t = threading.Thread(target=self.__runstabilizer,
@@ -197,10 +202,10 @@ class P2Peer:
 
     def addpeerat(self, loc, peerid, host, port):
         # --------------------------------------------------------------------------
-        """ Inserts a peer's information at a specific position in the 
+        """ Inserts a peer's information at a specific position in the
         list of peers. The functions addpeerat, getpeerat, and removepeerat
-        should not be used concurrently with addpeer, getpeer, and/or 
-        removepeer. 
+        should not be used concurrently with addpeer, getpeer, and/or
+        removepeer.
 
         """
         self.peers[loc] = (peerid, host, int(port))
@@ -249,7 +254,7 @@ class P2Peer:
 
     def makeserversocket(self, port, backlog=5):
         # --------------------------------------------------------------------------
-        """ Constructs and prepares a server socket listening on the given 
+        """ Constructs and prepares a server socket listening on the given
         port.
 
         """
@@ -265,13 +270,13 @@ class P2Peer:
         # --------------------------------------------------------------------------
         """
         sendtopeer( peer id, message type, message data, wait for a reply )
-         -> [ ( reply type, reply data ), ... ] 
+         -> [ ( reply type, reply data ), ... ]
 
         Send a message to the identified peer. In order to decide how to
         send the message, the router handler for this peer will be called.
         If no router function has been registered, it will not work. The
-        router function should provide the next immediate peer to whom the 
-        message should be forwarded. The peer's reply, if it is expected, 
+        router function should provide the next immediate peer to whom the
+        message should be forwarded. The peer's reply, if it is expected,
         will be returned.
 
         Returns None if the message could not be routed.
@@ -301,6 +306,10 @@ class P2Peer:
         """
         msgreply = []
         try:
+            if ',' in host:
+                host = host.split("', '", 1)[1][1:]  # parsing
+                port = port[:-2]
+            print("!!!!!!!!!!!!HOST AND PORT |%s| |%s|" % (host, port))
             peerconn = P2PeerConnection(pid, host, port, debug=self.debug)
             peerconn.senddata(msgtype, msgdata)
             self.__debug('Sent %s: %s' % (pid, msgtype))
@@ -407,17 +416,20 @@ class P2PeerConnection:
 
         if not sock:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if isinstance(port, str):
+                if port[len(port)-1] == ')':
+                    port = port[:-1]
             self.s.connect((host, int(port)))
         else:
             self.s = sock
 
-        self.sd = self.s.makefile('rw', 1)
+        self.sd = self.s.makefile('rw', 0)
 
     # --------------------------------------------------------------------------
     def __makemsg(self, msgtype, msgdata):
         # --------------------------------------------------------------------------
         msglen = len(msgdata)
-        msg = struct.pack(("!4sL%ds" % msglen).encode('ascii'), msgtype.encode('ascii'), msglen, msgdata.encode('ascii'))
+        msg = struct.pack("!4sL%ds" % msglen, msgtype, msglen, msgdata)
         return msg
 
     # --------------------------------------------------------------------------
@@ -438,7 +450,10 @@ class P2PeerConnection:
 
         try:
             msg = self.__makemsg(msgtype, msgdata)
-            self.sd.write(msg.decode('ascii'))
+            print("MESSAGE BEING SENT\n\n\n\n\n")
+            print(msg)
+            print(msg)
+            self.sd.write(msg)
             self.sd.flush()
         except KeyboardInterrupt:
             raise
@@ -459,12 +474,14 @@ class P2PeerConnection:
         """
 
         try:
+            print("ARE YOU RESPONSIBLE $$$$$$$$$$$$$$$$$")
             msgtype = self.sd.read(4)
+            print(msgtype)
             if not msgtype:
                 return (None, None)
 
             lenstr = self.sd.read(4)
-            msglen = int(struct.unpack( "!L".encode('ascii'), lenstr.encode('ascii') )[0])
+            msglen = int(struct.unpack( "!L", lenstr )[0])
             msg = ""
 
             while len(msg) != msglen:

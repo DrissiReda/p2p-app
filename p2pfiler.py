@@ -170,6 +170,10 @@ class FilerPeer(P2Peer):
                 if fpeerid :   # local files mapped to None
                     fpeerid = self.myid
                 host, port = peerid.split(':')
+                if host[0] == '(':
+                    host = host[1:]
+                    port = port[:-1]
+                print("!!!!!!!!!!!HOST AND PORT ARE + |%s| |%s|" % (host, port))
                 # can't use sendtopeer here because peerid is not necessarily
                 # an immediate neighbor
                 self.connectandsend(host, int(port), QRESPONSE,
@@ -221,6 +225,7 @@ class FilerPeer(P2Peer):
             peerconn.senddata(ERROR, 'File not found')
             return
         try:
+            print("#######Opening file |%s|" % fname)
             fd = file(fname, 'r')
             filedata = ''
             while True:

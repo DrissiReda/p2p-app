@@ -10,7 +10,7 @@ import os
 import sys
 import threading
 
-from tkinter import *
+from Tkinter import *
 from random import *
 
 from p2pfiler import *
@@ -56,10 +56,11 @@ class P2PGui(Frame):
             self.fileList.delete(0, self.fileList.size() - 1)
         for f in self.p2peer.files:
             p = self.p2peer.files[f]
-            if not p[1]:
-                p[1] = '(local)'
+            if p is not None:
+                if not p[1]:
+                    p[1] = '(local)'
 
-            self.fileList.insert(END, "%s:%s" % (f, p[1]))
+            self.fileList.insert(END, "%s:%s" % (f, '(local)' if p is None else "%s" % p[1]))
 
     def createWidgets(self):
         """
@@ -95,7 +96,7 @@ class P2PGui(Frame):
         self.fileList.grid(row=0, column=0, columnspan= 4, sticky=N+S+E+W)
         fileScroll["command"] = self.fileList.yview
 
-        self.fetchButton = Button(addfileFrame, text='Fetch',
+        self.fetchButton = Button(addfileFrame, text='Download',
                                   command=self.onFetch)
         self.addfileButton = Button(addfileFrame, text='Populate',
                                     command=self.onPopulate)
@@ -125,13 +126,13 @@ class P2PGui(Frame):
         self.peerList.grid(row=0, column=0, sticky=N+S)
         peerScroll["command"] = self.peerList.yview
 
-        self.removeButton = Button(pbFrame, text='Remove',
+        self.removeButton = Button(pbFrame, text='Unregister',
                                    command=self.onRemove)
         self.refreshButton = Button(pbFrame, text='Refresh',
                                     command=self.onRefresh)
 
         self.rebuildEntry = Entry(rebuildFrame, width=150)
-        self.rebuildButton = Button(rebuildFrame, text='Rebuild',
+        self.rebuildButton = Button(rebuildFrame, text='Register',
                                     command=self.onRebuild)
         self.removeButton.grid(row=0, column=0)
         self.refreshButton.grid(row=0, column=1)
@@ -141,7 +142,7 @@ class P2PGui(Frame):
         # print "Done"
 
     def onPopulate(self):
-        for file in os.listdir():
+        for file in os.listdir('.'):
             self.onAdd(file)
 
     def onAdd(self, file):
@@ -165,7 +166,11 @@ class P2PGui(Frame):
             sel = self.fileList.get(sels[0]).split(':')
             if len(sel) > 2:  # fname:host:port
                 fname, host, port = sel
-                resp = self.p2peer.connectandsend(host, port, FILEGET, fname)
+                sel[1] = sel[1][1:]
+                sel[2] = sel[2][:-1]
+                print(sel)
+                resp = self.p2peer.connectandsend(host[1:], port[:-1], FILEGET, fname)
+                print(resp)
                 if len(resp) and resp[0][0] == REPLY:
                     fd = file(fname, 'w')
                     fd.write(resp[0][1])
@@ -179,15 +184,12 @@ class P2PGui(Frame):
             if len(sel) > 2: # fname:host:port means remote
                 print("Dude, leave people's files alone")
             else:
-                print("!!!!!!!!!!DELETING "+sel[0]+"'")
                 self.p2peer.dellocalfile(sel[0])
 
     def onInfo(self):
         sels = self.fileList.curselection()
-        print("######LENGTH "+str(len(sels)))
         if len(sels) == 1:
             sel = self.fileList.get(sels[0]).split(':')
-            print("######LENGTH "+str(len(sel)))
             if len(sel) <= 3:
                 text="File :"+sel[0]+" is \nsize :"+self.p2peer.files[sel[0]][0]
                 toplevel = Toplevel()
