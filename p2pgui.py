@@ -56,9 +56,10 @@ class P2PGui(Frame):
             self.fileList.delete(0, self.fileList.size() - 1)
         for f in self.p2peer.files:
             p = self.p2peer.files[f]
-            if not p:
-                p = '(local)'
-            self.fileList.insert(END, "%s:%s" % (f, p))
+            if not p[1]:
+                p[1] = '(local)'
+
+            self.fileList.insert(END, "%s:%s" % (f, p[1]))
 
     def createWidgets(self):
         """
@@ -147,7 +148,7 @@ class P2PGui(Frame):
         # file = self.addfileEntry.get()
         if file.lstrip().rstrip():
             filename = file.lstrip().rstrip()
-            self.p2peer.addlocalfile(filename)
+            self.p2peer.addlocalfile(filename, humansize(os.path.getsize(filename)))
         # self.addfileEntry.delete( 0, len(file) )
 
     def onSearch(self):
@@ -183,10 +184,12 @@ class P2PGui(Frame):
 
     def onInfo(self):
         sels = self.fileList.curselection()
+        print("######LENGTH "+str(len(sels)))
         if len(sels) == 1:
             sel = self.fileList.get(sels[0]).split(':')
-            if len(sel) <= 2:
-                text="File :"+sel[0]+" is \nsize :"+humansize(os.path.getsize(sel[0]))
+            print("######LENGTH "+str(len(sel)))
+            if len(sel) <= 3:
+                text="File :"+sel[0]+" is \nsize :"+self.p2peer.files[sel[0]][0]
                 toplevel = Toplevel()
                 label1 = Label(toplevel, text=text, height=5, width=25)
                 label1.pack()

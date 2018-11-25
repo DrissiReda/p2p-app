@@ -165,14 +165,15 @@ class FilerPeer(P2Peer):
         """
         for fname in self.files.keys():
             if key in fname:
-                fpeerid = self.files[fname]
-                if not fpeerid:   # local files mapped to None
+                fsize = self.files[fname][0]
+                fpeerid = self.files[fname][1]
+                if fpeerid :   # local files mapped to None
                     fpeerid = self.myid
                 host, port = peerid.split(':')
                 # can't use sendtopeer here because peerid is not necessarily
                 # an immediate neighbor
                 self.connectandsend(host, int(port), QRESPONSE,
-                                    '%s %s' % (fname, fpeerid),
+                                    "%s ['%s', '(%s)']" % (fname, fsize, fpeerid),
                                     pid=peerid)
                 return
         # will only reach here if key not found... in which case
@@ -193,12 +194,14 @@ class FilerPeer(P2Peer):
 
         """
         try:
-            fname, fpeerid = data.split()
-            if fname in self.files:
+            fname = data.split(" ", 1)[0]
+            fsize = data.split(" ",1)[1][2:-2].split("', '")[0]
+            fpeerid = data.split(" ",1)[1][2:-2].split("', '")[1]
+            if fname in self.files.keys():
                 self.__debug('Can\'t add duplicate file %s %s' %
-                             (fname, fpeerid))
+                             (fname, fsize, fpeerid))
             else:
-                self.files[fname] = fpeerid
+                self.files[fname] = [fsize, fpeerid]
         except:
             # if self.debug:
             traceback.print_exc()
@@ -310,10 +313,10 @@ class FilerPeer(P2Peer):
 
     # --------------------------------------------------------------------------
 
-    def addlocalfile(self, filename):
+    def addlocalfile(self, filename, size):
         # --------------------------------------------------------------------------
         """ Registers a locally-stored file with the peer. """
-        self.files[filename] = None
+        self.files[filename] = [size, None]
         self.__debug("Added local file %s" % filename)
 
     def dellocalfile(self, filename):
