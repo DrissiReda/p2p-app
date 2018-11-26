@@ -90,7 +90,7 @@ class P2PGui(Frame):
         fileScroll = Scrollbar(fileListFrame, orient=VERTICAL)
         fileScroll.grid(row=0, column=4, sticky=N+S+E+W)
 
-        self.fileList = Listbox(fileListFrame, height=20, width=100,
+        self.fileList = Listbox(fileListFrame, height=20, width=50,
                                 yscrollcommand=fileScroll.set)
         # self.fileList.insert( END, 'a', 'b', 'c', 'd', 'e', 'f', 'g' )
         self.fileList.grid(row=0, column=0, columnspan= 4, sticky=N+S+E+W)
@@ -109,7 +109,7 @@ class P2PGui(Frame):
         self.delfileButton.grid(row=0, column=2)
         self.infofileButton.grid(row=0, column=3)
 
-        self.searchEntry = Entry(searchFrame, width=150)
+        self.searchEntry = Entry(searchFrame, width=20)
         self.searchButton = Button(searchFrame, text='Search',
                                    command=self.onSearch)
         self.searchEntry.grid(row=0, column=0)
@@ -131,7 +131,7 @@ class P2PGui(Frame):
         self.refreshButton = Button(pbFrame, text='Refresh',
                                     command=self.onRefresh)
 
-        self.rebuildEntry = Entry(rebuildFrame, width=150)
+        self.rebuildEntry = Entry(rebuildFrame, width=20)
         self.rebuildButton = Button(rebuildFrame, text='Register',
                                     command=self.onRebuild)
         self.removeButton.grid(row=0, column=0)
@@ -184,6 +184,10 @@ class P2PGui(Frame):
             if len(sel) > 2: # fname:host:port means remote
                 print("Dude, leave people's files alone")
             else:
+                try:
+                    os.remove(sel[0])
+                except:
+                    print("Error removing file")
                 self.p2peer.dellocalfile(sel[0])
 
     def onInfo(self):
