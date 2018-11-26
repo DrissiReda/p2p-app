@@ -17,11 +17,11 @@ from p2pfiler import *
 
 
 class P2PGui(Frame):
-    def __init__(self, firstpeer, hops=2, maxpeers=5, serverport=5678, master=None):
+    def __init__(self, firstpeer, hops=2, maxpeers=5, serverport=None, master=None):
         Frame.__init__(self, master)
         self.grid()
         self.createWidgets()
-        self.master.title("G4 P2P GUI port:%d" % serverport)
+        self.master.title("G4 P2P GUI %s" % serverport)
         self.p2peer = FilerPeer(maxpeers, serverport)
 
         self.bind("<Destroy>", self.__onDestroy)
@@ -242,7 +242,8 @@ def main():
         print ("Syntax: %s server-port max-peers peer-ip:port" % sys.argv[0])
         sys.exit(-1)
 
-    serverport = int(sys.argv[1])
+    #serverport = int(sys.argv[1])
+    serverport = sys.argv[1]
     maxpeers = sys.argv[2]
     peerid = sys.argv[3]
     app = P2PGui(firstpeer=peerid, maxpeers=maxpeers, serverport=serverport)
