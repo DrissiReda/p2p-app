@@ -36,13 +36,11 @@ class P2Peer:
         self.debug = True
 
         self.maxpeers = int(maxpeers)
-        self,serverhost, self.serverport = serverport.split(':')
-        self.serverport = int(serverport)
-        if serverhost:
-            self.serverhost = serverhost
-        else:
-            self.__initserverhost()
-
+        print(serverport.split(':'))
+        serverport.split(':')
+        self.serverhost = serverport[0]
+        self.serverport = int(serverport[1])
+        
         if myid:
             self.myid = myid
         else:
